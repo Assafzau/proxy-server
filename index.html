@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Donate to an NGO</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        text-align: center;
+      }
+      .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+      }
+      .options-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .option {
+        flex: 1 1 calc(33% - 20px);
+        max-width: calc(33% - 20px);
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s, border-color 0.3s;
+      }
+      .option:hover {
+        transform: scale(1.05);
+        border-color: #007bff;
+      }
+      .option img {
+        width: 100%;
+        height: auto;
+        border: 2px solid transparent;
+        border-radius: 10px;
+      }
+      .option input[type="radio"] {
+        display: none;
+      }
+      .option input[type="radio"]:checked + img {
+        border: 3px solid #007bff;
+      }
+      .form-submit button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .form-submit button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-container">
+      <h2>Select an NGO to Support</h2>
+      <form id="ngoForm">
+        <input
+          type="text"
+          id="customerName"
+          placeholder="Enter your name"
+          required
+        />
+        <div class="options-container">
+          <label class="option">
+            <input type="radio" name="ngo" value="halasartan" />
+            <img src="https://via.placeholder.com/150" alt="Halasartan" />
+            חלאסרטן
+          </label>
+          <label class="option">
+            <input type="radio" name="ngo" value="natl" />
+            <img src="https://via.placeholder.com/150" alt="Natal" />
+            נט"ל
+          </label>
+          <label class="option">
+            <input type="radio" name="ngo" value="naamat" />
+            <img src="https://via.placeholder.com/150" alt="Naamat" />
+            נעמת
+          </label>
+        </div>
+        <div class="form-submit">
+          <button type="button" id="submitButton">Submit</button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      document.getElementById("submitButton").addEventListener("click", function () {
+    const customerName = document.getElementById("customerName").value.trim();
+    const selectedNgo = document.querySelector('input[name="ngo"]:checked');
+
+    if (!customerName) {
+        alert("Please enter your name.");
+        return;
+    }
+
+    if (!selectedNgo) {
+        alert("Please select an NGO before submitting.");
+        return;
+    }
+
+    // Map the selected NGO to valid status labels
+    const ngoValueMap = {
+        halasartan: "Halasartan",
+        natl: "Natal",
+        naamat: "Naamat",
+        letlive: "LetLive",
+        autism: "Alot",
+        dignity: "LiveInDignity",
+    };
+
+    const ngoValue = ngoValueMap[selectedNgo.value];
+
+    fetch("http://localhost:3000/monday", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            query: `
+                mutation {
+                    create_item (
+                        board_id: 7961027713,
+                        item_name: "${customerName}",
+                        column_values: "{\\\"status\\\": \\\"${ngoValue}\\\"}"
+                    ) {
+                        id
+                    }
+                }
+            `,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.errors) {
+                console.error("Error creating item:", data.errors);
+                alert("Failed to submit. Please try again.");
+            } else {
+                alert(`Thank you, ${customerName}, for supporting ${ngoValue}!`);
+                document.getElementById("ngoForm").reset();
+            }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+        });
+});
+
+    </script>
+  </body>
+</html>
