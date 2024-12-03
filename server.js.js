@@ -27,3 +27,22 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Proxy server running on http://localhost:${PORT}`);
 });
+
+app.post("/monday", async (req, res) => {
+    try {
+        console.log("Request body:", req.body); // Debug the incoming request
+        const response = await axios.post("https://api.monday.com/v2", req.body, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: process.env.API_TOKEN,
+            },
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error("Error occurred:", error.response ? error.response.data : error.message); // Log the error
+        res.status(500).send(error.response ? error.response.data : error.message);
+    }
+});
+
+console.log("API_TOKEN:", process.env.API_TOKEN);
+
